@@ -52,7 +52,8 @@ for j in `find $dir2 -type f`
 		nbligne2=`expr $nbligne2 + 1`
 	done
 	
-for(( k=1; k <= $nbligne2; k++ ))
+k=1
+while [ $k -le $nbligne2 ]
 	do 
 		#La comparaison doit comparer le 1er fichier avec tous les autres fichiers du 2 répertoire puis passer au deuxième fichier et ainsi de suite
 		temp1md5=`sed -n $filecompare'p' résultat.txt | cut -d ' ' -f1`
@@ -76,6 +77,7 @@ for(( k=1; k <= $nbligne2; k++ ))
 		else
 			nbfiledif=`expr $nbfiledif + 1`
 		fi
+k=$((k+1))
 	done
 	
 echo "Les résultats sont dans le fichier $sortieFile"

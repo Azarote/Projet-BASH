@@ -64,9 +64,11 @@ filedif=`cat $sortieFile | cut -d ' ' -f1 | sort -u | wc -l`
 cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat
 
 #Test pour sortir les fichiers différents
-for(( k=1; k <= $filedif; k++ ))
+k=1
+while  [ $k -le $filedif ]
 	do
 		sed -n $k'p' resultat.txt && grep `sed -n $k'p' resultat.txt` sortie.txt | cut -d ' ' -f3 > test.txt
+		k=$((k+1))
 	done
 
 #Comparaison des aborescences

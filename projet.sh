@@ -1,44 +1,47 @@
 # Script projet 2019 M1101 - Systèmes
-#Munoz Matteo - Pollet Lucas - Corizzi Ianis
-#Groupe X 
+# MUNOZ Matteo - POLLET Lucas - CORIZZI Ianis
+# Groupe X 
 
-
-
-sortieFile="résultat.txt"
-rm $sortieFile
-rm Sortie.txt
+sortieFile="sortie.txt"
+resultat="resultat.txt"
+rm $resultat
 
 echo "- Outil de comparaison de fichiers -"
 
 #demande des répertoires
 
-echo "Entrez le 1er répertoire"
-read dir1
-
-while test ! -d $dir1
-	 do
-		echo "$dir1 n'existe pas"
+if [ $# -eq 0 ]
+	then
 		echo "Entrez le 1er répertoire"
 		read dir1
-	 done
 
-echo "Entrez le 2e répertoire"
-read dir2
+	while test ! -d $dir1
+		do
+			echo "$dir1 n'existe pas"
+			echo "Entrez le 1er répertoire"
+			read dir1
+		done
 
-while test ! -d $dir2
-	 do
-		echo "$dir2 n'existe pas"
-		echo "Entrez le 2e répertoire"
-		read dir2
-	 done
+	echo "Entrez le 2e répertoire"
+	read dir2
 
+	while test ! -d $dir2
+		do
+			echo "$dir2 n'existe pas"
+			echo "Entrez le 2e répertoire"
+			read dir2
+		done
+elif [ $# -ne 2 ]
+	then
+	echo "Pour utiliser ce script, il faut 2 arguments (répertoires)"
+	exit
+else
+	dir1=$1
+	dir2=$2
+fi
+	
 #début analyse
 echo "Début d'analyse... Patientez"
-
-nbligne1=0
-nbligne2=0
-nbfiledif=0
-filecompare=1
 
 for i in `find $dir1 -type f`
 	do 
@@ -52,33 +55,29 @@ for j in `find $dir2 -type f`
 		nbligne2=`expr $nbligne2 + 1`
 	done
 	
-k=1
-while [ $k -le $nbligne2 ]
-	do 
-		#La comparaison doit comparer le 1er fichier avec tous les autres fichiers du 2 répertoire puis passer au deuxième fichier et ainsi de suite
-		temp1md5=`sed -n $filecompare'p' résultat.txt | cut -d ' ' -f1`
-		temp2md5=`sed -n $(($nbligne1 + $k))'p' résultat.txt | cut -d ' ' -f1`
+temp1=`find $dir1 -type f -exec md5sum {} \; > tempmd5 && md5sum tempmd5 && rm tempmd5 | cut -d ' ' -f1`
+temp2=`find $dir2 -type f -exec md5sum {} \; > tempmd5 && md5sum tempmd5 && rm tempmd5 | cut -d ' ' -f1`
+nbfichier1=`find $dir1 -type f | wc -l`
+nbfichier2=`find $dir2 -type f | wc -l`	
+nbtot=$(( $nbfichier1 + $nbfichier2 ))
+filedif=`cat $sortieFile | cut -d ' ' -f1 | sort -u | wc -l`
+cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat
 
-		if [ $k -eq $nbligne2 ] && [ $nbligne1 -ne $filecompare ]
-			then
-			filecompare=`expr $filecompare + 1`
-			k=1
-		  fi
-
-		echo "Test de $temp1md5 et $temp2md5"
-		if [ $temp1md5 = $temp2md5 ]
-			then
-			
-				echo "$temp1md5 identique"
-				echo "Ces fichiers sont identiques :" >> Sortie.txt
-				grep $temp1md5 $sortieFile >> Sortie.txt
-			
-				#sed -i -e "s/$temp1md5/' '/g" $sortieFile 
-		else
-			nbfiledif=`expr $nbfiledif + 1`
-		fi
-k=$((k+1))
+#Test pour sortir les fichiers différents
+for(( k=1; k <= $filedif; k++ ))
+	do
+		sed -n $k'p' resultat.txt && grep `sed -n $k'p' resultat.txt` sortie.txt | cut -d ' ' -f3 > test.txt
 	done
+
+#Comparaison des aborescences
+if [ "$temp1" = "$temp2" ]
+	then
+	echo "Les deux arborescences sont identiques."
+else
+	echo "Les deux arborescences sont différentes."
+fi
 	
-echo "Les résultats sont dans le fichier $sortieFile"
-echo "Il y a" $nbfiledif "fichier(s) différents dans les arborescences."
+echo "Les résultats sont dans le fichier $resultat"
+echo "Il y a un total de" $nbtot "fichiers dans les arborescences."
+echo "Il y a" $filedif "fichiers différents."
+echo "La liste des fichiers différents est dans le fichier $resultat"

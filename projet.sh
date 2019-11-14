@@ -5,7 +5,7 @@
 sortieFile="sortie.txt"
 resultat="resultat.txt"
 rm $resultat
-
+rm $sortieFile
 echo "- Outil de comparaison de fichiers -"
 
 #demande des répertoires

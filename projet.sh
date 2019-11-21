@@ -4,6 +4,7 @@
 
 sortieFile="sortie.txt"
 resultat="resultat.txt"
+range="fichier-rangé.txt"
 
 #On teste si les fichiers existent
 if [ -f $resultat ]
@@ -13,6 +14,10 @@ fi
 if [ -f $sortieFile ]
 then 
 rm $sortieFile
+fi
+if [ -f $range ]
+then
+rm $range
 fi
 
 
@@ -75,6 +80,7 @@ filedif=`cat $sortieFile | cut -d ' ' -f1 | sort -u | wc -l`
 echo "Les MD5 de chaque fichier différent:"
 cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat
 cat $resultat
+sort $sortieFile >> $range
 
 #Test pour sortir les fichiers différents
 k=1
@@ -114,3 +120,4 @@ fi
 echo "Il y a un total de" $nbtot "fichiers dans les arborescences."
 echo "Il y a" $filedif "fichiers différents."
 echo "La liste des fichiers différents est dans le fichier $resultat"
+echo "La liste de tout les fichier rangé par empreinte md5 est dans $range"

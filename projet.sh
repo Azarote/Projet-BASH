@@ -5,7 +5,7 @@
 sortieFile="sortie.txt"
 resultat="resultat.txt"
 range="fichier-rangé.txt"
-
+diffe="différence.txt"
 #On teste si les fichiers existent
 if [ -f $resultat ]
 then 
@@ -60,12 +60,12 @@ echo "Début d'analyse... Patientez"
 
 for i in `find $dir1 -type f`
 	do 
-		md5sum $i >> $sortieFile
+		md5sum $i >> $sortieFile #récupération de toute les empreintes du premier répertoire 
 	done
 		
 for j in `find $dir2 -type f`
 	do 
-		md5sum $j >> $sortieFile
+		md5sum $j >> $sortieFile #récupération de toute les empreintes du deuxième répertoire
 	done
 
 #On récupère les md5 des 2 répertoires
@@ -78,37 +78,12 @@ nbtot=$(($nbfichier1 + $nbfichier2))
 filedif=`cat $sortieFile | cut -d ' ' -f1 | sort -u | wc -l`
 
 echo "Les MD5 de chaque fichier différent:"
-cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat
+cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat #récupère toute les empreintes différentes
 cat $resultat
-sort $sortieFile >> $range
+sort $sortieFile >> $range #range les fichier par empreintes
+#récupération des différents fichier et répertoire pour chaque arborescence
+diff $dir1 $dir2 >> $diffe
 
-#Test pour sortir les fichiers différents
-k=1
-m=1
-while  [ $k -le $filedif ]
-	do
-		
-		actualmd5=`sed -n $k'p' resultat.txt`
-		echo $k
-		echo "Fichier(s) portant ce md5 : " $actualmd5 >> test.txt
-		k=$(($k+1))
-		m=1
-		
-		while [ $m -le $nbtot ]
-			do
-				md5atest=`sed -n $m'p' sortie.txt | cut -d ' ' -f1` 
-				echo "M - $m - $md5atest"
-				if [ "$actualmd5" = "$md5atest" ]
-					then
-					echo "OUUUI"
-					sed -n $m'p' sortie.txt | cut -d ' ' -f3 >> test.txt
-				else      
-					echo "NOP"
-				fi
-				m=$(($m+1))	
-			done
-	done
-	
 #Comparaison des aborescences
 if [ "$temp1" = "$temp2" ]
 	then
@@ -119,5 +94,8 @@ fi
 	
 echo "Il y a un total de" $nbtot "fichiers dans les arborescences."
 echo "Il y a" $filedif "fichiers différents."
-echo "La liste des fichiers différents est dans le fichier $resultat"
+echo "La liste des fichiers avec des empreintes différentes est dans le fichier $resultat"
 echo "La liste de tout les fichier rangé par empreinte md5 est dans $range"
+#com a supprimer avans de rendre le projet (étas de ce que vous avais fait est pourquois)
+#le prof a dit que sa servais a rien de sortir les fichier différence donc je ai suprimé cette partie la 
+#reste les fichier et répertoire différent pour chaque arborescences (machin avec diff) 

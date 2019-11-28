@@ -1,6 +1,7 @@
 # Script projet 2019 M1101 - Systèmes
 # MUNOZ Matteo - POLLET Lucas - CORIZZI Ianis
 # Groupe X 
+#!/bin/bash
 
 sortieFile="sortie.txt"
 resultat="resultat.txt"

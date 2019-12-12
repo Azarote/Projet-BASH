@@ -17,6 +17,8 @@ listedossiermd51="listedossiermd51.txt"
 listedossiermd52="listedossiermd52.txt"
 tempsousdossier="tempsousdossier.txt"
 tempsousdossier2="tempsousdossier2.txt"
+listefichier1="listefichier1.txt"
+listefichier2="listefichier2.txt"
 
 # Couleurs (gras)
 ROUGE="$(tput bold ; tput setaf 1)"
@@ -43,6 +45,8 @@ delFile $listedossiermd51
 delFile $listedossiermd52
 delFile $tempsousdossier
 delFile $tempsousdossier2
+delFile $listefichier1
+delFile $listefichier2
 
 #demande des répertoires
 
@@ -98,17 +102,12 @@ for j in `find $dir2 -type f`
 		nbligne2=`expr $nbligne2 + 1`
 	done
 		
-temp1=`find $dir1 -type f -exec md5sum {} \; > tempmd5 && md5sum tempmd5 && rm tempmd5 | cut -d ' ' -f1`
-temp2=`find $dir2 -type f -exec md5sum {} \; > tempmd5 && md5sum tempmd5 && rm tempmd5 | cut -d ' ' -f1`
-
-#############################################################
-# PARTIE A CONTINUER ....
 
 find $dir1 -type d >> listedossier1.txt
 find $dir2 -type d >> listedossier2.txt
 
-#arbo1
-while read line
+createMD5folder(){ # $1 = listedossier $2 = liste des md5 des fichiers
+	while read line
 	do
 		find $line -type f -exec md5sum {} \; >> tempsousdossier.txt
 		find $line -type d -exec basename {} \; | sed '1d' >> tempsousdossier2.txt
@@ -121,34 +120,24 @@ while read line
 			done < tempsousdossier.txt
 		chemin=`echo "$line" | cut -d ' ' -f3` 
 		md5=`md5sum tempsousdossier2.txt | cut -d ' ' -f1`
-		echo "$md5" "$chemin" >> listedossiermd51.txt
+		echo "$md5" "$chemin" >> $2
 		
 		rm -f tempsousdossier.txt
 		rm -f tempsousdossier2.txt
-	done < listedossier1.txt
+	done < $1
+}
 
-#arbo2
-while read line
-	do
-		find $line -type f -exec md5sum {} \; >> tempsousdossier.txt
-		find $line -type d -exec basename {} \; | sed '1d' >> tempsousdossier2.txt
-		while read line2
-			do
-				chemin=`echo "$line2" | cut -d ' ' -f3` 
-				nom=`basename $chemin`
-				md5=`echo "$line2" | cut -d ' ' -f1`
-				echo "$md5" "$nom" >> tempsousdossier2.txt
-			done < tempsousdossier.txt
-		chemin=`echo "$line" | cut -d ' ' -f3` 
-		md5=`md5sum tempsousdossier2.txt | cut -d ' ' -f1`
-		echo "$md5" "$chemin" >> listedossiermd52.txt
-		
-		rm -f tempsousdossier.txt
-		rm -f tempsousdossier2.txt
-	done < listedossier2.txt
+createMD5folder listedossier1.txt listedossiermd51.txt
+createMD5folder listedossier2.txt listedossiermd52.txt  
 
-#Comparaison arbo1 par rapport à arbo2
-while read line
+nbforfile1=0
+nbforfile2=0
+nbforfolder1=0
+nbforfolder2=0
+
+compareForDif(){ # $1 = premier fichier ou dossier à comparer $2 = deuxieme fichier ou dossier à comparer $3 nb alloué 
+	nbdif=0
+	while read line
 	do
 		bool=0
 		linemd5=`echo "$line" | cut -d ' ' -f1`
@@ -160,34 +149,37 @@ while read line
 				then
 					bool=1
 				fi
-			done < listedossiermd52.txt
+			done < $2
 		if test $bool -eq 0 
 		then
-			echo "Le dossier à l'adresse : $linechemin n'apparait dans l'arborescence 2"
+			nbdif=`expr $nbdif + 1`  
 		fi
-	done < listedossiermd51.txt
-
-#Comparaison arbo2 par rapport à arbo1	
-while read line
-	do
-		bool=0
-		linemd5=`echo "$line" | cut -d ' ' -f1`
-		linechemin=`echo "$line" | cut -d ' ' -f2`
-		while read line2
-			do
-				line2md5=`echo "$line2" | cut -d ' ' -f1`
-				if test "$linemd5" == "$line2md5"
-				then
-					bool=1
-				fi
-			done < listedossiermd51.txt
-		if test $bool -eq 0 
+	done < $1
+	
+	if $3 -eq 1
 		then
-			echo "Le dossier à l'adresse : $linechemin n'apparait dans l'arborescence 1"
-		fi
-	done < listedossiermd52.txt
+		nbforfile1=$nbdif
+	elif $3 -eq 2
+		then
+		nbforfile2=$nbdif
+	elif $3 -eq 3 
+		then
+		nbforfolder1=$nbdif
+	elif $3 -eq 4
+		then
+		nbforfolder2=$nbdif
+	fi	
+	
+}
 
-#####################################################	
+compareForDif $listefichier1 $listefichier2 1
+compareForDif $listefichier2 $listefichier1 2
+compareForDif $listedossiermd51 $listedossiermd52 3
+compareForDif $listedossiermd52 $listedossiermd51 4
+
+nbfiledif=$(($nbforfile1 + $$nbforfile2))
+nbfolderdif=$(($nbforfolder1 + $nbforfolder2))
+
 	
 nbfichier1=`find $dir1 -type f | wc -l`
 nbfichier2=`find $dir2 -type f | wc -l`	
@@ -230,8 +222,10 @@ else
 	echo "Les deux arborescences sont ${JAUNE}différentes${RESET}."
 fi
 
+echo "Il y a ${VERT}$nbfiledif${RESET} fichiers différents entre l'arborescence $dir1 et $dir2"
+echo "Il y a ${VERT}$nbfolderdif${RESET} dossiers différents entre l'arborescence $dir1 et $dir2"
+
 echo "Il y a un total de ${VERT}"$nbtot" fichiers ${RESET}dans les arborescences."
 echo "Il y a ${VERT}"$filedif" fichiers ${RESET}qui ont un md5 différent."
-echo "L'arborescence" $dir1 "possède x fichiers différents de" $dir2
 
 delFile $resultat

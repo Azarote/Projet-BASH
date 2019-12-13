@@ -39,8 +39,6 @@ delFile(){
 echo "${ROUGE}- Outil de comparaison de fichiers -${RESET}"
 
 delFile $sortieFile
-delFile $listedossier1
-delFile $listedossier2
 delFile $listedossiermd51
 delFile $listedossiermd52
 delFile $tempsousdossier
@@ -89,20 +87,22 @@ delFile $filetri
 
 #début analyse
 echo "Début d'analyse... Patientez"
-
+echo "-------------------------------------------------"
+echo "Analyse des fichiers..."
 for i in `find $dir1 -type f`
 	do 
 		md5sum $i >> $sortieFile #récupération de toute les empreintes du premier répertoire
+		md5sum $i >> $listefichier1 
 		nbligne1=`expr $nbligne1 + 1`
 	done
 		
 for j in `find $dir2 -type f`
 	do 
 		md5sum $j >> $sortieFile #récupération de toute les empreintes du deuxième répertoire
+		md5sum $j >> $listefichier2
 		nbligne2=`expr $nbligne2 + 1`
 	done
 		
-
 find $dir1 -type d >> listedossier1.txt
 find $dir2 -type d >> listedossier2.txt
 
@@ -127,6 +127,7 @@ createMD5folder(){ # $1 = listedossier $2 = liste des md5 des fichiers
 	done < $1
 }
 
+echo "Analyse des dossiers..."
 createMD5folder listedossier1.txt listedossiermd51.txt
 createMD5folder listedossier2.txt listedossiermd52.txt  
 
@@ -156,28 +157,31 @@ compareForDif(){ # $1 = premier fichier ou dossier à comparer $2 = deuxieme fic
 		fi
 	done < $1
 	
-	if $3 -eq 1
+	if test $3 -eq 1
 		then
 		nbforfile1=$nbdif
-	elif $3 -eq 2
+	elif test $3 -eq 2
 		then
 		nbforfile2=$nbdif
-	elif $3 -eq 3 
+	elif test $3 -eq 3 
 		then
 		nbforfolder1=$nbdif
-	elif $3 -eq 4
+	elif test $3 -eq 4
 		then
 		nbforfolder2=$nbdif
 	fi	
 	
 }
 
+echo "Comparaison des fichiers..."
 compareForDif $listefichier1 $listefichier2 1
 compareForDif $listefichier2 $listefichier1 2
+
+echo "Comparaison des dossiers..."
 compareForDif $listedossiermd51 $listedossiermd52 3
 compareForDif $listedossiermd52 $listedossiermd51 4
 
-nbfiledif=$(($nbforfile1 + $$nbforfile2))
+nbfiledif=$(($nbforfile1 + $nbforfile2))
 nbfolderdif=$(($nbforfolder1 + $nbforfolder2))
 
 	
@@ -186,6 +190,7 @@ nbfichier2=`find $dir2 -type f | wc -l`
 nbtot=$(($nbfichier1 + $nbfichier2))
 filedif=`cat $sortieFile | cut -d ' ' -f1 | sort -u | wc -l`
 
+echo "-------------------------------------------------"
 echo "Les MD5 de chaque fichier différent:"
 cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat #récupère toute les empreintes différentes
 cat $resultat
@@ -212,9 +217,17 @@ while  [ $k -le $filedif ]
 			done
 		echo "" >> $filetri
 	done
-	
+
+echo " "
+echo "-------------------------------------------------"
+
 #Comparaison des aborescences
-if [ "$temp1" == "$temp2" ]
+md5forfolder1=`md5sum $listedossier1 | cut -d ' ' -f1`
+md5forfolder2=`md5sum $listedossier2 | cut -d ' ' -f1`
+md5forfile1=`md5sum $listefichier1 | cut -d ' ' -f1`
+md5forfile2=`md5sum $listefichier2 | cut -d ' ' -f1`
+
+if [ $md5forfolder1 == $md5forfolder2 ] && [ $md5forfile1 == $md5forfile2 ]
 	then
 	echo "Les deux arborescences sont ${JAUNE}identiques${RESET}."
 	nbtot=$nbfichier1
@@ -222,10 +235,16 @@ else
 	echo "Les deux arborescences sont ${JAUNE}différentes${RESET}."
 fi
 
+echo  "-------------------------------------------------"
+
 echo "Il y a ${VERT}$nbfiledif${RESET} fichiers différents entre l'arborescence $dir1 et $dir2"
 echo "Il y a ${VERT}$nbfolderdif${RESET} dossiers différents entre l'arborescence $dir1 et $dir2"
 
 echo "Il y a un total de ${VERT}"$nbtot" fichiers ${RESET}dans les arborescences."
 echo "Il y a ${VERT}"$filedif" fichiers ${RESET}qui ont un md5 différent."
 
+echo "-------------------------------------------------"
+
 delFile $resultat
+delFile $listedossier1
+delFile $listedossier2

@@ -112,7 +112,6 @@ for j in `find $dir2 -type f`
 		nbligne2=`expr $nbligne2 + 1`
 	done
 
-
 find $dir1 -type d | tail -n +2 >> listedossier1.txt
 find $dir2 -type d | tail -n +2 >> listedossier2.txt
 

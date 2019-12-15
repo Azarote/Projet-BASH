@@ -10,6 +10,9 @@
 
 
 sortieFile="sortie.txt"
+fichdif="FichDif.txt"
+dossdif="DossDif.txt"
+result="résultat.txt"
 resultat="resultat.txt"
 listedossier1="listedossier1.txt"
 listedossier2="listedossier2.txt"
@@ -39,6 +42,9 @@ delFile(){
 echo "${ROUGE}- Outil de comparaison de fichiers -${RESET}"
 
 delFile $sortieFile
+delFile $fichdif
+delFile $dossdif
+delFile $result
 delFile $listedossiermd51
 delFile $listedossiermd52
 delFile $tempsousdossier
@@ -102,15 +108,16 @@ for j in `find $dir2 -type f`
 		md5sum $j >> $listefichier2
 		nbligne2=`expr $nbligne2 + 1`
 	done
-		
-find $dir1 -type d >> listedossier1.txt
-find $dir2 -type d >> listedossier2.txt
+
+
+find $dir1 -type d | tail -n +2 >> listedossier1.txt
+find $dir2 -type d | tail -n +2 >> listedossier2.txt
 
 createMD5folder(){ # $1 = listedossier $2 = liste des md5 des fichiers
 	while read line
 	do
 		find $line -type f -exec md5sum {} \; >> tempsousdossier.txt
-		find $line -type d -exec basename {} \; | sed '1d' >> tempsousdossier2.txt
+		find $line -type d -exec basename {} \; | sed '1d'  >> tempsousdossier2.txt
 		while read line2
 			do
 				chemin=`echo "$line2" | cut -d ' ' -f3` 
@@ -120,7 +127,7 @@ createMD5folder(){ # $1 = listedossier $2 = liste des md5 des fichiers
 			done < tempsousdossier.txt
 		chemin=`echo "$line" | cut -d ' ' -f3` 
 		md5=`md5sum tempsousdossier2.txt | cut -d ' ' -f1`
-		echo "$md5" "$chemin" >> $2
+		echo "$md5" "$chemin"  >> $2
 		
 		rm -f tempsousdossier.txt
 		rm -f tempsousdossier2.txt
@@ -142,6 +149,7 @@ compareForDif(){ # $1 = premier fichier ou dossier à comparer $2 = deuxieme fic
 	do
 		bool=0
 		linemd5=`echo "$line" | cut -d ' ' -f1`
+		fichchemin=`echo "$line" | cut -d ' ' -f3`
 		linechemin=`echo "$line" | cut -d ' ' -f2`
 		while read line2
 			do
@@ -153,6 +161,14 @@ compareForDif(){ # $1 = premier fichier ou dossier à comparer $2 = deuxieme fic
 			done < $2
 		if test $bool -eq 0 
 		then
+			if [ $3 -eq 1 ] || [ $3 -eq 2 ]
+			then
+			echo $linemd5 $fichchemin >> $fichdif
+			fi
+			if [ $3 -eq 3 ] || [ $3 -eq 4 ]
+			then
+			echo $linemd5 $linechemin >> $dossdif
+			fi
 			nbdif=`expr $nbdif + 1`  
 		fi
 	done < $1
@@ -226,6 +242,11 @@ md5forfolder1=`md5sum $listedossier1 | cut -d ' ' -f1`
 md5forfolder2=`md5sum $listedossier2 | cut -d ' ' -f1`
 md5forfile1=`md5sum $listefichier1 | cut -d ' ' -f1`
 md5forfile2=`md5sum $listefichier2 | cut -d ' ' -f1`
+echo "Fichier Différent entre $dir1 et $dir2" >> $result | cat $fichdif  >> $result
+echo -e "\nDossier différent entre $dir1 et $dir2" >> $result | cat $dossdif >> $result
+
+rm -rf $dossdif
+rm -rf $fichdif
 
 if [ $md5forfolder1 == $md5forfolder2 ] && [ $md5forfile1 == $md5forfile2 ]
 	then
@@ -242,6 +263,7 @@ echo "Il y a ${VERT}$nbfolderdif${RESET} dossiers différents entre l'arborescen
 
 echo "Il y a un total de ${VERT}"$nbtot" fichiers ${RESET}dans les arborescences."
 echo "Il y a ${VERT}"$filedif" fichiers ${RESET}qui ont un md5 différent."
+echo "Les fichiers et dossier différent ainsi que leur chemin sont dans ${VERT}"résultat.txt"${RESET}."
 
 echo "-------------------------------------------------"
 

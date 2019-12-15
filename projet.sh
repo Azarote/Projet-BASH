@@ -56,7 +56,6 @@ delFile $listefichier1
 delFile $listefichier2
 
 #demande des répertoires
-
 if [ $# -eq 0 ]
 	then
 		echo "Entrez le 1er répertoire"
@@ -98,23 +97,28 @@ delFile $filetri
 echo "Début d'analyse... Patientez"
 echo "-------------------------------------------------"
 echo "Analyse des fichiers..."
+
+#récupération de toute les empreintes des fichiers du premier répertoire
 for i in `find $dir1 -type f`
 	do 
-		md5sum $i >> $sortieFile #récupération de toute les empreintes du premier répertoire
+		md5sum $i >> $sortieFile
 		md5sum $i >> $listefichier1 
 		nbligne1=`expr $nbligne1 + 1`
 	done
 		
+#récupération de toutes les empreintes des fichiers du deuxième répertoire		
 for j in `find $dir2 -type f`
 	do 
-		md5sum $j >> $sortieFile #récupération de toute les empreintes du deuxième répertoire
+		md5sum $j >> $sortieFile 
 		md5sum $j >> $listefichier2
 		nbligne2=`expr $nbligne2 + 1`
 	done
 
+#On récupère les dossiers des arborescences
 find $dir1 -type d | tail -n +2 >> listedossier1.txt
 find $dir2 -type d | tail -n +2 >> listedossier2.txt
 
+#Fonction qui crée un fichier qui contient les md5 des fichiers d'une arborescence
 createMD5folder(){ # $1 = listedossier $2 = liste des md5 des fichiers
 	while read line
 	do
@@ -145,6 +149,7 @@ nbforfile2=0
 nbforfolder1=0
 nbforfolder2=0
 
+#Fonction pour comparer les différences entre les 2 arbos
 compareForDif(){ # $1 = premier fichier ou dossier à comparer $2 = deuxieme fichier ou dossier à comparer $3 nb alloué 
 	nbdif=0
 	while read line
@@ -165,11 +170,11 @@ compareForDif(){ # $1 = premier fichier ou dossier à comparer $2 = deuxieme fic
 		then
 			if [ $3 -eq 1 ] || [ $3 -eq 2 ]
 			then
-			echo $linemd5 $fichchemin >> $fichdif
+				echo $linemd5 $fichchemin >> $fichdif
 			fi
 			if [ $3 -eq 3 ] || [ $3 -eq 4 ]
 			then
-			echo $linemd5 $linechemin >> $dossdif
+				echo $linemd5 $linechemin >> $dossdif
 			fi
 			nbdif=`expr $nbdif + 1`  
 		fi
@@ -213,7 +218,7 @@ echo "Les MD5 de chaque fichier différent:"
 cat $sortieFile | cut -d ' ' -f1 | sort -u > $md5unique #récupère toute les empreintes différentes
 cat $md5unique
 
-#Test pour sortir les fichiers différents
+#On trie les fichiers par rapport à leur md5
 k=1
 m=1
 while  [ $k -le $filedif ]

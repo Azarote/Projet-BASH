@@ -242,11 +242,11 @@ md5forfolder1=`md5sum $listedossier1 | cut -d ' ' -f1`
 md5forfolder2=`md5sum $listedossier2 | cut -d ' ' -f1`
 md5forfile1=`md5sum $listefichier1 | cut -d ' ' -f1`
 md5forfile2=`md5sum $listefichier2 | cut -d ' ' -f1`
-echo "Fichier Différent entre $dir1 et $dir2" >> $result | cat $fichdif  >> $result
+echo "Fichier différent entre $dir1 et $dir2" >> $result | cat $fichdif  >> $result
 echo -e "\nDossier différent entre $dir1 et $dir2" >> $result | cat $dossdif >> $result
 
-rm -rf $dossdif
-rm -rf $fichdif
+delFile $dossdif
+delFile $fichdif
 
 if [ $md5forfolder1 == $md5forfolder2 ] && [ $md5forfile1 == $md5forfile2 ]
 	then

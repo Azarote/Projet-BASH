@@ -11,7 +11,7 @@ Pour pouvoir utiliser ce programme il faut avoir 2 arborescences à comparer pui
 - en les écrivant en paramètres (2 param max)
 - en les écrivant après avoir lancer le programme
 
-Le programme se charge de comparer les 2 arborescences.
+Le programme se charge de comparer les MD5 des dossiers et fichiers des 2 arborescences.
 ATTENTION: Ce traitement peut durer un certain temps.
 
 Une réponse des différences vous est donné en sortie.

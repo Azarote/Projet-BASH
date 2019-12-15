@@ -263,7 +263,7 @@ echo "Il y a ${VERT}$nbfolderdif${RESET} dossiers différents entre l'arborescen
 
 echo "Il y a un total de ${VERT}"$nbtot" fichiers ${RESET}dans les arborescences."
 echo "Il y a ${VERT}"$filedif" fichiers ${RESET}qui ont un md5 différent."
-echo "Les fichiers et dossier différent ainsi que leur chemin sont dans ${VERT}"résultat.txt"${RESET}."
+echo "Les fichiers et dossiers différents ainsi que leurs chemins sont dans ${VERT}"résultat.txt"${RESET}."
 
 echo "-------------------------------------------------"
 

@@ -9,11 +9,13 @@
 #=============================================
 
 
+#Définition des noms de fichier sortie dans une variable
+
 sortieFile="sortie.txt"
 fichdif="FichDif.txt"
 dossdif="DossDif.txt"
 result="résultat.txt"
-resultat="resultat.txt"
+md5unique="md5unique.txt"
 listedossier1="listedossier1.txt"
 listedossier2="listedossier2.txt"
 listedossiermd51="listedossiermd51.txt"
@@ -41,6 +43,7 @@ delFile(){
 
 echo "${ROUGE}- Outil de comparaison de fichiers -${RESET}"
 
+#Suppression des anciens fichiers si existants
 delFile $sortieFile
 delFile $fichdif
 delFile $dossdif
@@ -208,8 +211,8 @@ filedif=`cat $sortieFile | cut -d ' ' -f1 | sort -u | wc -l`
 
 echo "-------------------------------------------------"
 echo "Les MD5 de chaque fichier différent:"
-cat $sortieFile | cut -d ' ' -f1 | sort -u > $resultat #récupère toute les empreintes différentes
-cat $resultat
+cat $sortieFile | cut -d ' ' -f1 | sort -u > $md5unique #récupère toute les empreintes différentes
+cat $md5unique
 
 #Test pour sortir les fichiers différents
 k=1
@@ -248,6 +251,8 @@ echo -e "\nDossier différent entre $dir1 et $dir2" >> $result | cat $dossdif >>
 delFile $dossdif
 delFile $fichdif
 
+# - AFFICHAGE RESULTATS - 
+
 if [ $md5forfolder1 == $md5forfolder2 ] && [ $md5forfile1 == $md5forfile2 ]
 	then
 	echo "Les deux arborescences sont ${JAUNE}identiques${RESET}."
@@ -267,6 +272,6 @@ echo "Les fichiers et dossiers différents ainsi que leurs chemins sont dans ${V
 
 echo "-------------------------------------------------"
 
-delFile $resultat
+delFile $md5unique
 delFile $listedossier1
 delFile $listedossier2
